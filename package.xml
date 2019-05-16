@@ -14,15 +14,21 @@
   <depend>roslib</depend>
   <depend>srdfdom</depend>
   <depend>urdf</depend>
+    <depend>roscpp_initializer</depend>
+    <depend>aikidopy</depend>
+  <depend>nlopt</depend>
+    <build_depend>pybind11_catkin</build_depend>
 
   <!-- Workaround to build DART with optional features enabled. -->
-  <depend>nlopt</depend>
+
 
   <doc_depend>doxygen</doc_depend>
 
   <exec_depend>ada_description</exec_depend>
   <!-- This is required by REP-136. -->
   <exec_depend>catkin</exec_depend>
+<exec_depend>pybind11_catkin</exec_depend>
+ <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>cmake</buildtool_depend>
   <buildtool_depend>clang-format-3.8</buildtool_depend>
   <buildtool_depend>lcov</buildtool_depend>

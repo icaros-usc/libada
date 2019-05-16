@@ -1,11 +1,19 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5.1)
 project(libada)
 set(library_VERSION 0.2.0)
+
+
+if(NOT ADAPY_PYTHON_VERSION)
+  set(ADAPY_PYTHON_VERSION 2.7)
+endif()
+
+find_package(PythonInterp ${ADAPY_PYTHON_VERSION} REQUIRED)
 
 option(LIBADA_TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 
 #================================================================================
 # CodeCov setup
@@ -47,9 +55,12 @@ find_package(aikido 0.3.0 REQUIRED
     io
 )
 
+
+find_package(PythonLibs 2.7 REQUIRED)
+
 find_package(ada_description REQUIRED)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED python)
 
 find_package(controller_manager_msgs REQUIRED)
 
@@ -59,7 +70,9 @@ find_package(srdfdom REQUIRED)
 
 find_package(urdf REQUIRED)
 
+#find_package(catkin REQUIRED COMPONENTS pybind11_catkin)
 
+find_package(aikidopy REQUIRED COMPONENTS libaikidopy)
 #================================================================================
 # Compiler settings
 #
@@ -67,6 +80,11 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 if(LIBADA_TREAT_WARNINGS_AS_ERRORS)
   add_compile_options(-Werror)
 endif()
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS}
+)
 
 #================================================================================
 # Library
@@ -77,6 +95,7 @@ set(sources
   src/AdaHandKinematicSimulationPositionCommandExecutor.cpp
   src/AdaHand.cpp
   src/Ada.cpp
+  src/adapy.cpp
   src/util.cpp
 )
 
@@ -112,6 +131,20 @@ target_link_libraries(libada
     ${roslib_LIBRARIES}
     ${srdfdom_LIBRARIES}
     ${urdf_LIBRARIES}
+)
+
+#=============================================================================
+#Pybind 
+
+pybind11_add_module(adapy
+  MODULE
+  src/adapy.cpp
+)
+
+target_link_libraries(adapy PUBLIC
+  libada
+  ${libaikidopy_LIBRARIES}
+  ${DART_LIBRARIES}
 )
 
 #================================================================================
