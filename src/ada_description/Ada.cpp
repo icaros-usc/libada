@@ -24,6 +24,7 @@
 #include <controller_manager_msgs/SwitchController.h>
 #include <dart/utils/urdf/urdf.hpp>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <aikido/rviz/WorldInteractiveMarkerViewer.hpp>
 #include <srdfdom/model.h>
 #include <urdf/model.h>
 

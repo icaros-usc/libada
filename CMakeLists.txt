@@ -53,6 +53,7 @@ find_package(aikido 0.3.0 REQUIRED
     robot
     statespace
     io
+    rviz
 )
 
 
@@ -91,12 +92,12 @@ include_directories(
 #
 
 set(sources
-  src/AdaFingerKinematicSimulationPositionCommandExecutor.cpp
-  src/AdaHandKinematicSimulationPositionCommandExecutor.cpp
-  src/AdaHand.cpp
-  src/Ada.cpp
-  src/adapy.cpp
-  src/util.cpp
+  src/ada_description/AdaFingerKinematicSimulationPositionCommandExecutor.cpp
+  src/ada_description/AdaHandKinematicSimulationPositionCommandExecutor.cpp
+  src/ada_description/AdaHand.cpp
+  src/ada_description/Ada.cpp
+  src/adapy/adapy.cpp
+  src/ada_description/util.cpp
 )
 
 add_library(libada SHARED ${sources})
@@ -138,7 +139,7 @@ target_link_libraries(libada
 
 pybind11_add_module(adapy
   MODULE
-  src/adapy.cpp
+  src/adapy/adapy.cpp
 )
 
 target_link_libraries(adapy PUBLIC
@@ -219,3 +220,4 @@ endif()
 # displaying the header files in IDEs.
 FILE(GLOB_RECURSE libada_headers "include/*.hpp")
 add_custom_target(headers SOURCES ${libada_headers})
+
