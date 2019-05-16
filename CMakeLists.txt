@@ -185,6 +185,10 @@ install(TARGETS libada EXPORT libadaConfig
   RUNTIME DESTINATION bin)
 install(DIRECTORY include/ DESTINATION include)
 
+# Hacked the output file to the right directory
+file(COPY ../../build/libada/adapy.so
+     DESTINATION ../../devel/lib/python2.7/dist-packages)
+
 # This makes the project importable from the install directory
 install(EXPORT libadaConfig DESTINATION share/libada/cmake)
 
