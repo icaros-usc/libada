@@ -11,6 +11,7 @@
 #include <aikido/common/Spline.hpp>
 #include <aikido/constraint/Testable.hpp>
 #include <aikido/constraint/TestableIntersection.hpp>
+#include <aikido/constraint/Satisfied.hpp>
 #include <aikido/control/KinematicSimulationTrajectoryExecutor.hpp>
 #include <aikido/control/ros/RosTrajectoryExecutor.hpp>
 #include <aikido/distance/defaults.hpp>
@@ -87,12 +88,10 @@ const std::vector<std::string> availableArmTrajectoryExecutorNames{
 namespace {
 
 BodyNodePtr getBodyNodeOrThrow(
-    const SkeletonPtr& skeleton, const std::string& bodyNodeName)
-{
+    const SkeletonPtr &skeleton, const std::string &bodyNodeName) {
   auto bodyNode = skeleton->getBodyNode(bodyNodeName);
 
-  if (!bodyNode)
-  {
+  if (!bodyNode) {
     std::stringstream message;
     message << "Bodynode [" << bodyNodeName << "] does not exist in skeleton.";
     throw std::runtime_error(message.str());
@@ -106,30 +105,28 @@ BodyNodePtr getBodyNodeOrThrow(
 Ada::Ada(
     aikido::planner::WorldPtr env,
     bool simulation,
-    const dart::common::Uri& adaUrdfUri,
-    const dart::common::Uri& adaSrdfUri,
-    const std::string& endEffectorName,
-    const std::string& armTrajectoryExecutorName,
-    const ::ros::NodeHandle* node,
+    const dart::common::Uri &adaUrdfUri,
+    const dart::common::Uri &adaSrdfUri,
+    const std::string &endEffectorName,
+    const std::string &armTrajectoryExecutorName,
+    const ::ros::NodeHandle *node,
     aikido::common::RNG::result_type rngSeed,
-    const dart::common::ResourceRetrieverPtr& retriever)
-  : mSimulation(simulation)
-  , mArmTrajectoryExecutorName(armTrajectoryExecutorName)
-  , mCollisionResolution(collisionResolution)
-  , mRng(rngSeed)
-  , mSmootherFeasibilityCheckResolution(1e-3)
-  , mSmootherFeasibilityApproxTolerance(1e-3)
-  , mWorld(std::move(env))
-  , mEndEffectorName(endEffectorName)
-{
+    const dart::common::ResourceRetrieverPtr &retriever)
+    : mSimulation(simulation),
+      mArmTrajectoryExecutorName(armTrajectoryExecutorName),
+      mCollisionResolution(collisionResolution),
+      mRng(rngSeed),
+      mSmootherFeasibilityCheckResolution(1e-3),
+      mSmootherFeasibilityApproxTolerance(1e-3),
+      mWorld(std::move(env)),
+      mEndEffectorName(endEffectorName) {
   simulation = true; // temporarily set simulation to true
 
   if (std::find(
-          availableArmTrajectoryExecutorNames.begin(),
-          availableArmTrajectoryExecutorNames.end(),
-          mArmTrajectoryExecutorName)
-      == availableArmTrajectoryExecutorNames.end())
-  {
+      availableArmTrajectoryExecutorNames.begin(),
+      availableArmTrajectoryExecutorNames.end(),
+      mArmTrajectoryExecutorName)
+      == availableArmTrajectoryExecutorNames.end()) {
     throw std::runtime_error("Arm Trajectory Controller is not valid!");
   }
 
@@ -141,15 +138,13 @@ Ada::Ada(
 
   // Load Ada
   mRobotSkeleton = mWorld->getSkeleton(name);
-  if (!mRobotSkeleton)
-  {
+  if (!mRobotSkeleton) {
     dart::utils::DartLoader urdfLoader;
     mRobotSkeleton = urdfLoader.parseSkeleton(adaUrdfUri, retriever);
     mWorld->addSkeleton(mRobotSkeleton);
   }
 
-  if (!mRobotSkeleton)
-  {
+  if (!mRobotSkeleton) {
     throw std::runtime_error("Unable to load ADA model.");
   }
 
@@ -174,8 +169,7 @@ Ada::Ada(
   srdfModel.initString(urdfModel, adaSrdfXMLString);
   auto disabledCollisions = srdfModel.getDisabledCollisionPairs();
 
-  for (auto disabledPair : disabledCollisions)
-  {
+  for (auto disabledPair : disabledCollisions) {
     auto body0 = getBodyNodeOrThrow(mRobotSkeleton, disabledPair.link1_);
     auto body1 = getBodyNodeOrThrow(mRobotSkeleton, disabledPair.link2_);
 
@@ -187,14 +181,10 @@ Ada::Ada(
     selfCollisionFilter->addBodyNodePairToBlackList(body0, body1);
   }
 
-  if (!mSimulation)
-  {
-    if (!node)
-    {
+  if (!mSimulation) {
+    if (!node) {
       mNode = make_unique<::ros::NodeHandle>();
-    }
-    else
-    {
+    } else {
       mNode = make_unique<::ros::NodeHandle>(*node);
     }
 
@@ -268,84 +258,72 @@ Ada::Ada(
 
 //==============================================================================
 std::unique_ptr<aikido::trajectory::Spline> Ada::smoothPath(
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const aikido::trajectory::Trajectory* path,
-    const TestablePtr& constraint)
-{
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const aikido::trajectory::Trajectory *path,
+    const TestablePtr &constraint) {
   return mRobot->smoothPath(metaSkeleton, path, constraint);
 }
 
 //==============================================================================
 std::unique_ptr<aikido::trajectory::Spline> Ada::retimePath(
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const aikido::trajectory::Trajectory* path)
-{
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const aikido::trajectory::Trajectory *path) {
   return mRobot->retimePath(metaSkeleton, path);
 }
 
 //==============================================================================
 std::unique_ptr<aikido::trajectory::Spline> Ada::retimePathWithKunz(
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const aikido::trajectory::Trajectory* path,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const aikido::trajectory::Trajectory *path,
     double maxDeviation,
-    double timestep)
-{
+    double timestep) {
   return mRobot->retimePathWithKunz(metaSkeleton, path, maxDeviation, timestep);
 }
 
 //==============================================================================
-std::future<void> Ada::executeTrajectory(const TrajectoryPtr& trajectory) const
-{
+std::future<void> Ada::executeTrajectory(const TrajectoryPtr &trajectory) const {
   return mRobot->executeTrajectory(trajectory);
 }
 
 //==============================================================================
 boost::optional<Eigen::VectorXd> Ada::getNamedConfiguration(
-    const std::string& name) const
-{
+    const std::string &name) const {
   return mRobot->getNamedConfiguration(name);
 }
 
 //==============================================================================
 void Ada::setNamedConfigurations(
-    std::unordered_map<std::string, const Eigen::VectorXd> namedConfigurations)
-{
+    std::unordered_map<std::string, const Eigen::VectorXd> namedConfigurations) {
   mRobot->setNamedConfigurations(namedConfigurations);
 }
 
 //==============================================================================
-std::string Ada::getName() const
-{
+std::string Ada::getName() const {
   return mRobot->getName();
 }
 
 //==============================================================================
-dart::dynamics::ConstMetaSkeletonPtr Ada::getMetaSkeleton() const
-{
+dart::dynamics::ConstMetaSkeletonPtr Ada::getMetaSkeleton() const {
   return mRobot->getMetaSkeleton();
 }
 
 //==============================================================================
-ConstMetaSkeletonStateSpacePtr Ada::getStateSpace() const
-{
+ConstMetaSkeletonStateSpacePtr Ada::getStateSpace() const {
   return mRobot->getStateSpace();
 }
 
 //==============================================================================
-void Ada::setRoot(Robot* robot)
-{
+void Ada::setRoot(Robot *robot) {
   mRobot->setRoot(robot);
 }
 
 //==============================================================================
-void Ada::step(const std::chrono::system_clock::time_point& timepoint)
-{
+void Ada::step(const std::chrono::system_clock::time_point &timepoint) {
   std::lock_guard<std::mutex> lock(mRobotSkeleton->getMutex());
   mRobot->step(timepoint);
   mArm->step(timepoint);
 
-  if (!mSimulation)
-  {
+  if (!mSimulation) {
     auto armSkeleton = mRobot->getMetaSkeleton();
     armSkeleton->setPositions(
         mJointStateClient->getLatestPosition(*armSkeleton));
@@ -354,121 +332,153 @@ void Ada::step(const std::chrono::system_clock::time_point& timepoint)
 
 //==============================================================================
 CollisionFreePtr Ada::getSelfCollisionConstraint(
-    const ConstMetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton) const
-{
+    const ConstMetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton) const {
   return mRobot->getSelfCollisionConstraint(space, metaSkeleton);
 }
 
 //==============================================================================
 TestablePtr Ada::getFullCollisionConstraint(
-    const ConstMetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const CollisionFreePtr& collisionFree) const
-{
+    const ConstMetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const CollisionFreePtr &collisionFree) const {
   return mRobot->getFullCollisionConstraint(space, metaSkeleton, collisionFree);
 }
 //==============================================================================
-std::unique_ptr<aikido::common::RNG> Ada::cloneRNG()
-{
+std::unique_ptr<aikido::common::RNG> Ada::cloneRNG() {
   return std::move(cloneRNGFrom(mRng)[0]);
 }
 
 //==============================================================================
-aikido::planner::WorldPtr Ada::getWorld() const
-{
+aikido::planner::WorldPtr Ada::getWorld() const {
   return mWorld;
 }
 
 //==============================================================================
-ConcreteManipulatorPtr Ada::getArm()
-{
+ConcreteManipulatorPtr Ada::getArm() {
   return mArm;
 }
 
 //==============================================================================
-ConstConcreteManipulatorPtr Ada::getArm() const
-{
+ConstConcreteManipulatorPtr Ada::getArm() const {
   return mArm;
 }
 
 //==============================================================================
-AdaHandPtr Ada::getHand()
-{
+AdaHandPtr Ada::getHand() {
   return mHand;
 }
 
 //==============================================================================
-ConstAdaHandPtr Ada::getHand() const
-{
+ConstAdaHandPtr Ada::getHand() const {
   return mHand;
 }
 
 //==============================================================================
-void Ada::update()
-{
+void Ada::update() {
   step(std::chrono::system_clock::now());
 }
 
 //==============================================================================
+TrajectoryPtr Ada::computeSmoothJointSpacePath(
+    const aikido::statespace::dart::MetaSkeletonStateSpacePtr &stateSpace,
+    const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints) {
+  auto satisfied = std::make_shared<aikido::constraint::Satisfied>(stateSpace);
+
+  std::shared_ptr<aikido::statespace::GeodesicInterpolator>
+      interpolator = std::make_shared<aikido::statespace::GeodesicInterpolator>(stateSpace);
+  std::shared_ptr<aikido::trajectory::Interpolated>
+      traj = std::make_shared<aikido::trajectory::Interpolated>(stateSpace, interpolator);
+
+  for (auto &waypoint : waypoints) {
+    auto state = stateSpace->createState();
+    stateSpace->convertPositionsToState(waypoint.second, state);
+    traj->addWaypoint(waypoint.first, state);
+  }
+
+  auto smoothTrajectory
+      = this->smoothPath(this->getArm()->getMetaSkeleton(), traj.get(), satisfied);
+
+  return std::move(smoothTrajectory);
+}
+
+//==============================================================================
+TrajectoryPtr Ada::computeJointSpacePath(
+    const aikido::statespace::dart::MetaSkeletonStateSpacePtr &stateSpace,
+    const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints) {
+  auto satisfied = std::make_shared<aikido::constraint::Satisfied>(stateSpace);
+
+  std::shared_ptr<aikido::statespace::GeodesicInterpolator>
+      interpolator = std::make_shared<aikido::statespace::GeodesicInterpolator>(stateSpace);
+  std::shared_ptr<aikido::trajectory::Interpolated>
+      traj = std::make_shared<aikido::trajectory::Interpolated>(stateSpace, interpolator);
+
+  for (auto &waypoint : waypoints) {
+    auto state = stateSpace->createState();
+    stateSpace->convertPositionsToState(waypoint.second, state);
+    traj->addWaypoint(waypoint.first, state);
+  }
+
+  auto timedTrajectory
+     = this->retimePath(this->getArm()->getMetaSkeleton(),traj.get());
+
+  return std::move(timedTrajectory);
+}
+
+//==============================================================================
 TrajectoryPtr Ada::planToConfiguration(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const aikido::statespace::StateSpace::State* goalState,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const aikido::statespace::StateSpace::State *goalState,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToConfiguration(
       space, metaSkeleton, goalState, collisionFree, timelimit);
 }
 
 //==============================================================================
 TrajectoryPtr Ada::planToConfiguration(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const Eigen::VectorXd& goal,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const Eigen::VectorXd &goal,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToConfiguration(
       space, metaSkeleton, goal, collisionFree, timelimit);
 }
 
 //==============================================================================
 TrajectoryPtr Ada::planToConfigurations(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const std::vector<StateSpace::State*>& goalStates,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const std::vector<StateSpace::State *> &goalStates,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToConfigurations(
       space, metaSkeleton, goalStates, collisionFree, timelimit);
 }
 
 //==============================================================================
 TrajectoryPtr Ada::planToConfigurations(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const std::vector<Eigen::VectorXd>& goals,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const std::vector<Eigen::VectorXd> &goals,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToConfigurations(
       space, metaSkeleton, goals, collisionFree, timelimit);
 }
 
 //==============================================================================
 TrajectoryPtr Ada::planToTSR(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const dart::dynamics::BodyNodePtr& bn,
-    const TSRPtr& tsr,
-    const CollisionFreePtr& collisionFree,
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const dart::dynamics::BodyNodePtr &bn,
+    const TSRPtr &tsr,
+    const CollisionFreePtr &collisionFree,
     double timelimit,
     size_t maxNumTrials,
-    const aikido::distance::ConfigurationRankerPtr& ranker)
-{
+    const aikido::distance::ConfigurationRankerPtr &ranker) {
   return mRobot->planToTSR(
       space,
       metaSkeleton,
@@ -482,14 +492,13 @@ TrajectoryPtr Ada::planToTSR(
 
 //==============================================================================
 TrajectoryPtr Ada::planToTSRwithTrajectoryConstraint(
-    const MetaSkeletonStateSpacePtr& space,
-    const dart::dynamics::MetaSkeletonPtr& metaSkeleton,
-    const dart::dynamics::BodyNodePtr& bodyNode,
-    const TSRPtr& goalTsr,
-    const TSRPtr& constraintTsr,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const MetaSkeletonStateSpacePtr &space,
+    const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
+    const dart::dynamics::BodyNodePtr &bodyNode,
+    const TSRPtr &goalTsr,
+    const TSRPtr &constraintTsr,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToTSRwithTrajectoryConstraint(
       space,
       metaSkeleton,
@@ -502,16 +511,14 @@ TrajectoryPtr Ada::planToTSRwithTrajectoryConstraint(
 
 //==============================================================================
 TrajectoryPtr Ada::planToNamedConfiguration(
-    const std::string& name,
-    const CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const std::string &name,
+    const CollisionFreePtr &collisionFree,
+    double timelimit) {
   return mRobot->planToNamedConfiguration(name, collisionFree, timelimit);
 }
 
 //==============================================================================
-bool Ada::startTrajectoryExecutor()
-{
+bool Ada::startTrajectoryExecutor() {
   return switchControllers(
       std::vector<std::string>{mArmTrajectoryExecutorName,
                                mHandTrajectoryExecutorName},
@@ -519,8 +526,7 @@ bool Ada::startTrajectoryExecutor()
 }
 
 //==============================================================================
-bool Ada::stopTrajectoryExecutor()
-{
+bool Ada::stopTrajectoryExecutor() {
   return switchControllers(
       std::vector<std::string>(),
       std::vector<std::string>{mArmTrajectoryExecutorName,
@@ -528,27 +534,24 @@ bool Ada::stopTrajectoryExecutor()
 }
 
 //=============================================================================
-void Ada::setCRRTPlannerParameters(const CRRTPlannerParameters& crrtParameters)
-{
+void Ada::setCRRTPlannerParameters(const CRRTPlannerParameters &crrtParameters) {
   mRobot->setCRRTPlannerParameters(crrtParameters);
 }
 
 //=============================================================================
 void Ada::setVectorFieldPlannerParameters(
-    const VectorFieldPlannerParameters& vfParameters)
-{
+    const VectorFieldPlannerParameters &vfParameters) {
   mArm->setVectorFieldPlannerParameters(vfParameters);
 }
 
 //==============================================================================
 ConcreteManipulatorPtr Ada::configureArm(
-    const std::string& armName,
-    const dart::common::ResourceRetrieverPtr& retriever,
-    const TrajectoryExecutorPtr& executor,
+    const std::string &armName,
+    const dart::common::ResourceRetrieverPtr &retriever,
+    const TrajectoryExecutorPtr &executor,
     dart::collision::CollisionDetectorPtr collisionDetector,
-    const std::shared_ptr<dart::collision::BodyNodeCollisionFilter>&
-        selfCollisionFilter)
-{
+    const std::shared_ptr<dart::collision::BodyNodeCollisionFilter> &
+    selfCollisionFilter) {
   using dart::dynamics::Chain;
 
   auto armBase = getBodyNodeOrThrow(mRobotSkeleton, mArmBaseName);
@@ -590,37 +593,30 @@ ConcreteManipulatorPtr Ada::configureArm(
 }
 
 //==============================================================================
-Eigen::VectorXd Ada::getCurrentConfiguration() const
-{
+Eigen::VectorXd Ada::getCurrentConfiguration() const {
   return mRobot->getMetaSkeleton()->getPositions();
 }
 
 //==============================================================================
-Eigen::VectorXd Ada::getVelocityLimits() const
-{
+Eigen::VectorXd Ada::getVelocityLimits() const {
   return mRobot->getMetaSkeleton()->getVelocityUpperLimits();
 }
 
 //==============================================================================
-Eigen::VectorXd Ada::getAccelerationLimits() const
-{
+Eigen::VectorXd Ada::getAccelerationLimits() const {
   return mRobot->getMetaSkeleton()->getAccelerationUpperLimits();
 }
 
 //==============================================================================
 std::shared_ptr<aikido::control::TrajectoryExecutor>
-Ada::createTrajectoryExecutor()
-{
+Ada::createTrajectoryExecutor() {
   using aikido::control::KinematicSimulationTrajectoryExecutor;
   using aikido::control::ros::RosTrajectoryExecutor;
 
-  if (mSimulation)
-  {
+  if (mSimulation) {
     return std::make_shared<KinematicSimulationTrajectoryExecutor>(
         mRobotSkeleton);
-  }
-  else
-  {
+  } else {
     std::string serverName
         = mArmTrajectoryExecutorName + "/follow_joint_trajectory";
     return std::make_shared<RosTrajectoryExecutor>(
@@ -633,9 +629,8 @@ Ada::createTrajectoryExecutor()
 
 //==============================================================================
 bool Ada::switchControllers(
-    const std::vector<std::string>& startControllers,
-    const std::vector<std::string>& stopControllers)
-{
+    const std::vector<std::string> &startControllers,
+    const std::vector<std::string> &stopControllers) {
   if (!mNode)
     throw std::runtime_error("Ros node has not been instantiated.");
 
@@ -655,20 +650,17 @@ bool Ada::switchControllers(
 }
 
 //==============================================================================
-aikido::control::TrajectoryExecutorPtr Ada::getTrajectoryExecutor()
-{
+aikido::control::TrajectoryExecutorPtr Ada::getTrajectoryExecutor() {
   return mTrajectoryExecutor;
 }
 
 //==============================================================================
 aikido::trajectory::TrajectoryPtr Ada::planArmToTSR(
-    const aikido::constraint::dart::TSR& tsr,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
+    const aikido::constraint::dart::TSR &tsr,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
     double timelimit,
     size_t maxNumTrials,
-    const aikido::distance::ConfigurationRankerPtr& ranker)
-
-{
+    const aikido::distance::ConfigurationRankerPtr &ranker) {
   auto goalTSR = std::make_shared<aikido::constraint::dart::TSR>(tsr);
 
   return planToTSR(
@@ -684,14 +676,13 @@ aikido::trajectory::TrajectoryPtr Ada::planArmToTSR(
 
 //==============================================================================
 bool Ada::moveArmToTSR(
-    const aikido::constraint::dart::TSR& tsr,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
+    const aikido::constraint::dart::TSR &tsr,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
     double timelimit,
     size_t maxNumTrials,
-    const aikido::distance::ConfigurationRankerPtr& ranker,
-    const std::vector<double>& velocityLimits,
-    TrajectoryPostprocessType postprocessType)
-{
+    const aikido::distance::ConfigurationRankerPtr &ranker,
+    const std::vector<double> &velocityLimits,
+    TrajectoryPostprocessType postprocessType) {
   auto trajectory
       = planArmToTSR(tsr, collisionFree, timelimit, maxNumTrials, ranker);
 
@@ -704,14 +695,13 @@ bool Ada::moveArmToTSR(
 
 //==============================================================================
 bool Ada::moveArmToEndEffectorOffset(
-    const Eigen::Vector3d& direction,
+    const Eigen::Vector3d &direction,
     double length,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
     double timelimit,
     double positionTolerance,
     double angularTolerance,
-    const std::vector<double>& velocityLimits)
-{
+    const std::vector<double> &velocityLimits) {
   auto traj = planArmToEndEffectorOffset(
       direction,
       length,
@@ -728,13 +718,12 @@ bool Ada::moveArmToEndEffectorOffset(
 
 //==============================================================================
 aikido::trajectory::TrajectoryPtr Ada::planArmToEndEffectorOffset(
-    const Eigen::Vector3d& direction,
+    const Eigen::Vector3d &direction,
     double length,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
     double timelimit,
     double positionTolerance,
-    double angularTolerance)
-{
+    double angularTolerance) {
   auto trajectory = mArm->planToEndEffectorOffset(
       mArmSpace,
       mArm->getMetaSkeleton(),
@@ -751,10 +740,9 @@ aikido::trajectory::TrajectoryPtr Ada::planArmToEndEffectorOffset(
 
 //==============================================================================
 bool Ada::moveArmToConfiguration(
-    const Eigen::Vector6d& configuration,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
-    double timelimit)
-{
+    const Eigen::Vector6d &configuration,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
+    double timelimit) {
   auto trajectory = planToConfiguration(
       mArmSpace,
       mArm->getMetaSkeleton(),
@@ -768,19 +756,16 @@ bool Ada::moveArmToConfiguration(
 //==============================================================================
 bool Ada::moveArmOnTrajectory(
     aikido::trajectory::TrajectoryPtr trajectory,
-    const aikido::constraint::dart::CollisionFreePtr& collisionFree,
+    const aikido::constraint::dart::CollisionFreePtr &collisionFree,
     TrajectoryPostprocessType postprocessType,
-    std::vector<double> smoothVelocityLimits)
-{
-  if (!trajectory)
-  {
+    std::vector<double> smoothVelocityLimits) {
+  if (!trajectory) {
     throw std::runtime_error("Trajectory execution failed: Empty trajectory.");
   }
 
   std::vector<aikido::constraint::ConstTestablePtr> constraints;
 
-  if (collisionFree)
-  {
+  if (collisionFree) {
     constraints.push_back(collisionFree);
   }
   auto testable = std::make_shared<aikido::constraint::TestableIntersection>(
@@ -790,15 +775,12 @@ bool Ada::moveArmOnTrajectory(
 
   auto armSkeleton = mArm->getMetaSkeleton();
 
-  switch (postprocessType)
-  {
-    case PARABOLIC_RETIME:
-      timedTrajectory = retimePath(armSkeleton, trajectory.get());
+  switch (postprocessType) {
+    case PARABOLIC_RETIME:timedTrajectory = retimePath(armSkeleton, trajectory.get());
       break;
 
     case PARABOLIC_SMOOTH:
-      if (smoothVelocityLimits.size() == 6)
-      {
+      if (smoothVelocityLimits.size() == 6) {
         Eigen::Vector6d velocityLimits;
         velocityLimits << smoothVelocityLimits[0], smoothVelocityLimits[1],
             smoothVelocityLimits[2], smoothVelocityLimits[3],
@@ -812,42 +794,34 @@ bool Ada::moveArmOnTrajectory(
         timedTrajectory = smoothPath(armSkeleton, trajectory.get(), testable);
         armSkeleton->setVelocityLowerLimits(previousLowerLimits);
         armSkeleton->setVelocityUpperLimits(previousUpperLimits);
-      }
-      else
-      {
+      } else {
         timedTrajectory = smoothPath(armSkeleton, trajectory.get(), testable);
       }
       break;
 
-    case KUNZ:
-    {
+    case KUNZ: {
       timedTrajectory = retimePathWithKunz(
           armSkeleton, trajectory.get(), kunzMaxDeviation, kunzTimeStep);
 
-      if (!timedTrajectory)
-      {
+      if (!timedTrajectory) {
         // If using kunz retimer fails, fall back to parabolic timing
         timedTrajectory = retimePath(armSkeleton, trajectory.get());
       }
 
-      if (!timedTrajectory)
-      {
+      if (!timedTrajectory) {
         throw std::runtime_error("Retiming failed");
       }
       break;
     }
 
-    default:
-      throw std::invalid_argument("Unexpected trajectory post processing type");
+    default:throw std::invalid_argument("Unexpected trajectory post processing type");
   }
 
   auto future = executeTrajectory(std::move(timedTrajectory));
-  try
-  {
+  try {
     future.get();
   }
-  catch (const std::exception& e)
-  {
+  catch (const std::exception &e) {
     dtwarn << "Exception in trajectoryExecution: " << e.what() << std::endl;
     return false;
   }
@@ -855,14 +829,12 @@ bool Ada::moveArmOnTrajectory(
 }
 
 //==============================================================================
-void Ada::openHand()
-{
+void Ada::openHand() {
   mHand->executePreshape("open").wait();
 }
 
 //==============================================================================
-void Ada::closeHand()
-{
+void Ada::closeHand() {
   mHand->executePreshape("closed").wait();
 }
 
