@@ -97,6 +97,9 @@ set(sources
   src/ada_description/AdaHand.cpp
   src/ada_description/Ada.cpp
   src/adapy/adapy.cpp
+  src/adapy/ada_py.cpp
+  src/adapy/aikido_py.cpp
+  src/adapy/dart_py.cpp
   src/ada_description/util.cpp
 )
 
@@ -140,6 +143,9 @@ target_link_libraries(libada
 pybind11_add_module(adapy
   MODULE
   src/adapy/adapy.cpp
+  src/adapy/ada_py.cpp
+  src/adapy/aikido_py.cpp
+  src/adapy/dart_py.cpp
 )
 
 target_link_libraries(adapy PUBLIC
