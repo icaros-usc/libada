@@ -100,6 +100,7 @@ set(sources
   src/adapy/ada_py.cpp
   src/adapy/aikido_py.cpp
   src/adapy/dart_py.cpp
+  src/adapy/pr_tsr_py.cpp
   src/ada_description/util.cpp
 )
 
@@ -146,6 +147,7 @@ pybind11_add_module(adapy
   src/adapy/ada_py.cpp
   src/adapy/aikido_py.cpp
   src/adapy/dart_py.cpp
+  src/adapy/pr_tsr_py.cpp
 )
 
 target_link_libraries(adapy PUBLIC

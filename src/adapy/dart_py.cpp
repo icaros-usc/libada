@@ -3,6 +3,9 @@
 #include <dart/collision/CollisionDetector.hpp>
 #include <dart/collision/CollisionGroup.hpp>
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <pybind11/cast.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
