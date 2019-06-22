@@ -1,4 +1,5 @@
 #include <aikido/rviz/WorldInteractiveMarkerViewer.hpp>
+#include <dart/dynamics/JacobianNode.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/cast.h>
@@ -31,6 +32,10 @@ void Ada(pybind11::module& m) {
            [](ada::Ada *self) -> aikido::planner::WorldPtr {
              return self->getWorld();
            })
+      .def("get_hand",
+           [](ada::Ada *self) -> ada::AdaHandPtr {
+        return self->getHand();
+      })
       .def("get_skeleton", [](ada::Ada *self) -> dart::dynamics::MetaSkeletonPtr {
         return self->getMetaSkeleton();
       })
@@ -81,6 +86,26 @@ void Ada(pybind11::module& m) {
                -> aikido::trajectory::TrajectoryPtr {
              return self->computeSmoothJointSpacePath(stateSpace, waypoints);
            })
+      .def("compute_retime_path",
+           [](ada::Ada *self,
+              const dart::dynamics::MetaSkeletonPtr& armSkeleton,
+              aikido::trajectory::TrajectoryPtr trajectory_ptr) -> aikido::trajectory::TrajectoryPtr {
+        return self->retimePath(armSkeleton, trajectory_ptr.get());
+      })
+      .def("plan_to_configuration",
+           [](ada::Ada *self,
+              const aikido::statespace::dart::MetaSkeletonStateSpacePtr &armSpace,
+              const dart::dynamics::MetaSkeletonPtr& armSkeleton,
+              const Eigen::VectorXd& configuration) -> aikido::trajectory::TrajectoryPtr {
+              auto state = armSpace->createState();
+              armSpace->convertPositionsToState(configuration, state);
+              auto trajectory = self->planToConfiguration(armSpace,
+                                                          armSkeleton,
+                                                          state,
+                                                          nullptr,
+                                                          10);
+              return trajectory;
+          })
       .def("execute_trajectory",
            [](ada::Ada *self,
               const aikido::trajectory::TrajectoryPtr &trajectory)
@@ -101,5 +126,15 @@ void Ada(pybind11::module& m) {
              viewer->setAutoUpdate(true);
              return viewer;
            });
+  py::class_<ada::AdaHand, std::shared_ptr<ada::AdaHand>>(m, "AdaHand")
+      .def("get_endeffector_transform",
+           [](ada::AdaHand *self,
+              const std::string& objectType) -> Eigen::Matrix4d {
+        return self->getEndEffectorTransform(objectType)->matrix();
+      })
+      .def("get_endeffector_body_node",
+          [](ada::AdaHand *self) -> dart::dynamics::BodyNode* {
+        return self->getEndEffectorBodyNode();
+      });
 }
 

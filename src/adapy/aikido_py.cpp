@@ -25,12 +25,37 @@ Eigen::Isometry3d vectorToIsometry(std::vector<double> &poseVector) {
   return pose;
 }
 
+Eigen::Isometry3d matrixToIsometry(Eigen::Matrix4d& poseMatrix) {
+  Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
+  pose.translation() = poseMatrix.block<3, 1>(0, 3);
+  pose.linear() = poseMatrix.block<3, 3>(0, 0);
+  return pose;
+}
+
 void Aikido(pybind11::module& m) {
   //====================================AIKIDO=============================================================================
   py::class_<aikido::planner::World, std::shared_ptr<aikido::planner::World>>(m, "World")
       .def("add_body_from_urdf", [](aikido::planner::World *self, const std::string &uri,
                                     std::vector<double> objectPose) -> std::shared_ptr<::dart::dynamics::Skeleton> {
         auto transform = vectorToIsometry(objectPose);
+
+        dart::utils::DartLoader urdfLoader;
+        const auto resourceRetriever
+            = std::make_shared<aikido::io::CatkinResourceRetriever>();
+        const auto skeleton = urdfLoader.parseSkeleton(uri, resourceRetriever);
+
+        if (!skeleton)
+          throw std::runtime_error("unable to load '" + uri + "'");
+
+        dynamic_cast<dart::dynamics::FreeJoint *>(skeleton->getJoint(0))
+            ->setTransform(transform);
+
+        self->addSkeleton(skeleton);
+        return skeleton;
+      })
+      .def("add_body_from_urdf_matrix", [](aikido::planner::World *self, const std::string& uri,
+          Eigen::Matrix4d& objectPose) -> std::shared_ptr<::dart::dynamics::Skeleton> {
+        auto transform = matrixToIsometry(objectPose);
 
         dart::utils::DartLoader urdfLoader;
         const auto resourceRetriever

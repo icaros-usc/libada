@@ -9,6 +9,7 @@ void Ada(pybind11::module& m);
 void Aikido(pybind11::module& m);
 void Dart(pybind11::module& m);
 void Pr_Tsr(pybind11::module& m);
+void IK(pybind11::module& m);
 
 PYBIND11_MODULE(adapy, m) {
   Ada(m);
@@ -19,5 +20,5 @@ PYBIND11_MODULE(adapy, m) {
 
   Pr_Tsr(m);
 
-
+  IK(m);
 }
