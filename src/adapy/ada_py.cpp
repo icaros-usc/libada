@@ -45,6 +45,11 @@ void Ada(pybind11::module& m) {
       .def("get_arm_state_space", [](ada::Ada *self) -> aikido::statespace::dart::MetaSkeletonStateSpacePtr {
         return self->getArm()->getStateSpace();
       })
+      .def("set_positions",[](ada::Ada *self,const Eigen::VectorXd& configuration) -> void {
+           auto arm = self->getArm();
+           auto armSkeleton = arm->getMetaSkeleton();
+           armSkeleton->setPositions(configuration);
+      })
       .def("set_up_collision_detection",
            [](ada::Ada *self,
               const aikido::statespace::dart::MetaSkeletonStateSpacePtr &armSpace,
