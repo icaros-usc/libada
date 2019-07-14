@@ -254,6 +254,29 @@ void AdaHand::ungrab()
 }
 
 //==============================================================================
+std::future<void> AdaHand::executePreshape(const Eigen::Vector2d& preshape)
+{
+  using aikido::constraint::Satisfied;
+
+
+  auto goalState = mSpace->createState();
+  mSpace->convertPositionsToState(preshape, goalState);
+
+  auto satisfied = std::make_shared<Satisfied>(mSpace);
+
+
+  auto trajectory = aikido::robot::util::planToConfiguration(
+      mSpace, mHand, goalState, satisfied, nullptr, 1.0);
+  if (!trajectory)
+  {
+    throw std::runtime_error("Failed to find a plan for fingers.");
+  }
+
+  return mExecutor->execute(trajectory);
+
+}
+
+//==============================================================================
 std::future<void> AdaHand::executePreshape(const std::string& preshapeName)
 {
   using aikido::constraint::Satisfied;

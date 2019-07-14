@@ -11,8 +11,13 @@
 #include <pybind11/eigen.h>
 #include <pybind11/cast.h>
 #include <pybind11/stl.h>
+#include "aikido/statespace/StateHandle.hpp"
+#include "aikido/statespace/StateSpace.hpp"
+#include "aikido/statespace/ScopedState.hpp"
 
 namespace py = pybind11;
+
+
 
 Eigen::Isometry3d vectorToIsometry(std::vector<double> &poseVector) {
   double *ptr = &poseVector[0];
@@ -31,6 +36,7 @@ Eigen::Isometry3d matrixToIsometry(Eigen::Matrix4d& poseMatrix) {
   pose.linear() = poseMatrix.block<3, 3>(0, 0);
   return pose;
 }
+
 
 void Aikido(pybind11::module& m) {
   //====================================AIKIDO=============================================================================

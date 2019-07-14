@@ -80,6 +80,10 @@ public:
   // Documentation inherited.
   void ungrab() override;
 
+  
+  std::future<void> executePreshape(const Eigen::Vector2d& preshape);
+
+
   // Documentation inherited.
   std::future<void> executePreshape(const std::string& preshapeName) override;
 

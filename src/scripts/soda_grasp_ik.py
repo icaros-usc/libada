@@ -37,6 +37,11 @@ def createSodaTSR(sodaPose):
   sodaTSR.set_Bw(Bw)
   return sodaTSR
 
+
+def closeHand(hand, displacement):
+  hand.execute_preshape(displacement)
+
+
 if __name__ == '__main__':
   sim = True
   ada = adapy.Ada(True)
@@ -63,17 +68,18 @@ if __name__ == '__main__':
   tablePose = [0.3, 0.0, -0.7, 0.707107, 0, 0, 0.707107]
   table = world.add_body_from_urdf(tableURDFUri, tablePose)
   
+  closeHand(hand, [0.75,0.75])
 
   rospy.sleep(1.)
-  
 
+   
   sodaTSR = createSodaTSR(sodaPose)
   
   #marker = viewer.add_tsr_marker(sodaTSR)
 
 
   var = raw_input("Press Enter to continue...")
-
+  exit()
 
   ik_sampleable = adapy.create_ik(arm_skeleton,
                                   arm_state_space,

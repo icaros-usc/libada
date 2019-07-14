@@ -6,6 +6,7 @@
 #include <pybind11/stl.h>
 
 #include "libada/Ada.hpp"
+#include "aikido/statespace/ScopedState.hpp"
 
 namespace py = pybind11;
 
@@ -132,6 +133,21 @@ void Ada(pybind11::module& m) {
              return viewer;
            });
   py::class_<ada::AdaHand, std::shared_ptr<ada::AdaHand>>(m, "AdaHand")
+      .def("get_skeleton",
+           [](ada::AdaHand *self) -> dart::dynamics::MetaSkeletonPtr {
+        return self->getMetaSkeleton();
+      })
+    .def("get_state_space",
+           [](ada::AdaHand *self) -> aikido::statespace::dart::MetaSkeletonStateSpacePtr {
+        auto handSkeleton = self->getMetaSkeleton();
+        auto handSpace =   std::make_shared<aikido::statespace::dart::MetaSkeletonStateSpace>(handSkeleton.get());
+        return handSpace;
+      })
+    .def("execute_preshape",
+           [](ada::AdaHand *self, const Eigen::Vector2d &d)-> void {
+		auto future = self->executePreshape(d);
+                future.wait();
+           })
       .def("get_endeffector_transform",
            [](ada::AdaHand *self,
               const std::string& objectType) -> Eigen::Matrix4d {

@@ -195,7 +195,5 @@ if __name__ == '__main__':
         print(str(t)+"seconds elapsed")
         raw_input('Press ENTER to exit')
         ada.execute_trajectory(traj)
-        raw_input('Press ENTER to exit')
-        ada.execute_trajectory(traj)
         rospy.sleep(1.0)
 
