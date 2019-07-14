@@ -68,8 +68,6 @@ if __name__ == '__main__':
   tablePose = [0.3, 0.0, -0.7, 0.707107, 0, 0, 0.707107]
   table = world.add_body_from_urdf(tableURDFUri, tablePose)
   
-  closeHand(hand, [0.75,0.75])
-
   rospy.sleep(1.)
 
    
@@ -79,7 +77,7 @@ if __name__ == '__main__':
 
 
   var = raw_input("Press Enter to continue...")
-  exit()
+  #exit()
 
   ik_sampleable = adapy.create_ik(arm_skeleton,
                                   arm_state_space,
@@ -120,4 +118,10 @@ if __name__ == '__main__':
   else:
       #trajectory = ada.compute_retime_path(arm_skeleton, trajectory)
       ada.execute_trajectory(trajectory)
+
+  print("Closing hand")
+  closeHand(hand, [0.75,0.75])
+
+  #next step transfer Jacobian pseudo-inverse for upward motion
+
   var = raw_input("Press Enter to exit...")
