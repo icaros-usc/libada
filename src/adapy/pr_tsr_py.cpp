@@ -22,6 +22,9 @@ void Pr_Tsr(pybind11::module& m) {
       auto transform = matrixToIsometry(pose);
       self->mT0_w = transform;
     })
+    .def("set_Bw", [](aikido::constraint::dart::TSR *self, Eigen::MatrixXf& Bw) -> void {
+      self->mBw = Bw.cast<double>();
+    })
     .def("get_Tw_e", [](aikido::constraint::dart::TSR *self) -> Eigen::Matrix4d {
       auto Trans = self->mTw_e.matrix();
       return Trans;

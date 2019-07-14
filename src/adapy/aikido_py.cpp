@@ -79,16 +79,19 @@ void Aikido(pybind11::module& m) {
           return nullptr;
         }
       });
-
   py::class_<aikido::rviz::WorldInteractiveMarkerViewer, std::shared_ptr<aikido::rviz::WorldInteractiveMarkerViewer>>(
       m, "WorldInteractiveMarkerViewer")
+      .def("add_frame",
+           [](aikido::rviz::WorldInteractiveMarkerViewer *self, dart::dynamics::BodyNode* node)
+               -> void {
+             self->addFrame(node);
+           })
       .def("add_tsr_marker",
            [](aikido::rviz::WorldInteractiveMarkerViewer *self,
               std::shared_ptr<aikido::constraint::dart::TSR> tsr)
                -> aikido::rviz::TSRMarkerPtr {
              return self->addTSRMarker(*tsr.get());
            });
-
   py::class_<aikido::constraint::dart::CollisionFree, std::shared_ptr<aikido::constraint::dart::CollisionFree>>(
       m,
       "CollisionFree");
@@ -96,7 +99,7 @@ void Aikido(pybind11::module& m) {
       m,
       "MetaSkeletonStateSpace");
   py::class_<aikido::trajectory::Trajectory, aikido::trajectory::TrajectoryPtr>(m, "Trajectory");
-
+  py::class_<aikido::rviz::TSRMarker, aikido::rviz::TSRMarkerPtr>(m, "TSRMarker");
   py::class_<aikido::constraint::Testable, aikido::constraint::TestablePtr>(m, "FullCollisionFree").
       def("is_satisfied",
           [](aikido::constraint::Testable *self,
