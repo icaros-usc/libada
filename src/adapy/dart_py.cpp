@@ -29,6 +29,9 @@ void Dart(pybind11::module& m) {
       .def("get_num_joints",
            [](dart::dynamics::MetaSkeleton *self) -> int {
              return self->getNumJoints();
-           });
+           })
+      .def("get_linear_jacobian",
+           [](dart::dynamics::MetaSkeleton *self, const dart::dynamics::BodyNode* _node) ->dart::math::LinearJacobian{
+      return self->getLinearJacobian(_node);});
 }
 

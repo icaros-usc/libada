@@ -87,6 +87,8 @@ void Aikido(pybind11::module& m) {
       });
   py::class_<aikido::rviz::WorldInteractiveMarkerViewer, std::shared_ptr<aikido::rviz::WorldInteractiveMarkerViewer>>(
       m, "WorldInteractiveMarkerViewer")
+      .def("update",
+           [](aikido::rviz::WorldInteractiveMarkerViewer *self)->void{self->update();})
       .def("add_frame",
            [](aikido::rviz::WorldInteractiveMarkerViewer *self, dart::dynamics::BodyNode* node)
                -> void {

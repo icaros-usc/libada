@@ -3,6 +3,8 @@ import numpy as np
 import rospy
 import tf.transformations
 import adarrt
+import time
+
 # rospy.init_node('soda_grasp')
 
 def createBwMatrixforTSR():
@@ -58,6 +60,8 @@ if __name__ == '__main__':
 
   viewer.add_frame(hand_node);
 
+
+  
   sodaPose = np.eye(4)
   sodaPose[0,3] = 0.25
   sodaPose[1,3] = -0.35
@@ -65,15 +69,16 @@ if __name__ == '__main__':
   soda = world.add_body_from_urdf_matrix(sodaURDFUri, sodaPose)
 
   tableURDFUri = "package://pr_assets/data/furniture/uw_demo_table.urdf"
-  tablePose = [0.3, 0.0, -0.7, 0.707107, 0, 0, 0.707107]
+  tablePose = [0.3, 0.0, -0.71, 0.707107, 0, 0, 0.707107]
   table = world.add_body_from_urdf(tableURDFUri, tablePose)
   
   rospy.sleep(1.)
+  var = raw_input("Press Enter to start...")
 
    
   sodaTSR = createSodaTSR(sodaPose)
   
-  #marker = viewer.add_tsr_marker(sodaTSR)
+  marker = viewer.add_tsr_marker(sodaTSR)
 
 
   var = raw_input("Press Enter to continue...")
@@ -108,7 +113,7 @@ if __name__ == '__main__':
   trajectory = None
   for configuration in configurations:
       #trajectory = ada.plan_to_configuration(arm_state_space, arm_skeleton, configuration)
-      trajectory = adarrt.runRRT(start_state = np.array(armHome), goal_state = np.array(configuration), step_size = 0.1, goal_precision = 0.1,ada = ada)
+      trajectory = adarrt.runRRT(start_state = np.array(armHome), goal_state = np.array(configuration), step_size = 0.1, goal_precision = 0.1,ada = ada, objects = [soda,table])
 
       if trajectory:
           break
@@ -119,11 +124,27 @@ if __name__ == '__main__':
       #trajectory = ada.compute_retime_path(arm_skeleton, trajectory)
       ada.execute_trajectory(trajectory)
 
+
+
+
   print("Closing hand")
   closeHand(hand, [0.75,0.75])
 
-  hand.grab(soda)
-
+  hand.grab(ada,soda)
+  
   #next step transfer Jacobian pseudo-inverse for upward motion
 
+  for ii in range(0,50): 
+    jac = arm_skeleton.get_linear_jacobian(hand.get_endeffector_body_node())
+    delta_x = np.array([0,0,0.001])
+    delta_q = np.matmul(np.linalg.pinv(jac),delta_x)
+    q = arm_skeleton.get_positions()
+    q = q + delta_q
+    ada.set_positions(q)
+    viewer.update()
+    time.sleep(0.1)
+   
+
+
+  
   var = raw_input("Press Enter to exit...")

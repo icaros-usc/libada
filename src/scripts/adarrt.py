@@ -28,6 +28,7 @@ class AdaRRT():
                  ada,
                  step_size,
                  goal_precision,
+                 objects,
                  max_itr=10000):
         self.start = AdaRRT.Node(start_state, None)
         self.goal = AdaRRT.Node(goal_state, None)
@@ -38,19 +39,10 @@ class AdaRRT():
         self.step_size = step_size
         self.goal_precision = goal_precision
         self.min_err = 1000
-        
-        # add objects to world
-        canURDFUri = "package://pr_assets/data/objects/can.urdf"
-        sodaCanPose = [0.25, -0.35, 0.0, 0, 0, 0, 1]
-        tableURDFUri = "package://pr_assets/data/furniture/uw_demo_table.urdf"
-        tablePose = [0.3, 0.0, -0.7, 0.707107, 0, 0, 0.707107]
-        world = ada.get_world()
-        can = world.add_body_from_urdf(canURDFUri, sodaCanPose)
-        table = world.add_body_from_urdf(tableURDFUri, tablePose)
 
         collision_free_constraint = ada.set_up_collision_detection(self.ada.get_arm_state_space(),
                                                                    self.ada.get_arm_skeleton(),
-                                                                   [can, table])
+                                                                   [objects[0], objects[1]])
         self.full_collision_free_constraint = ada.get_full_collision_constraint(self.ada.get_arm_state_space(),
                                                                                 self.ada.get_arm_skeleton(),
                                                                                 collision_free_constraint)
@@ -142,10 +134,10 @@ class AdaRRT():
         return self.full_collision_free_constraint.is_satisfied(self.ada.get_arm_state_space(), self.ada.get_arm_skeleton(), new_node_state)
 
 
-def runRRT(start_state, goal_state, step_size, goal_precision, ada):
+def runRRT(start_state, goal_state, step_size, goal_precision, ada, objects):
       # easy goal
     adaRRT = AdaRRT(start_state = start_state,goal_state = goal_state,step_size = step_size, 
-        goal_precision = goal_precision, ada = ada)
+        goal_precision = goal_precision, ada = ada, objects = objects)
     path = adaRRT.build()
     if path is not None:
         print(path)

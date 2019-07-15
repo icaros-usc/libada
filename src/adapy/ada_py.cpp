@@ -7,7 +7,7 @@
 
 #include "libada/Ada.hpp"
 #include "aikido/statespace/ScopedState.hpp"
-
+#include <aikido/planner/World.hpp>
 namespace py = pybind11;
 
 void Ada(pybind11::module& m) {
@@ -158,7 +158,7 @@ void Ada(pybind11::module& m) {
         return self->getEndEffectorBodyNode();
       })
       .def("grab",
-          [](ada::AdaHand *self,const dart::dynamics::SkeletonPtr& object) -> void {
+          [](ada::AdaHand *self, ada::Ada *robot, dart::dynamics::SkeletonPtr object) -> void {
            self->grab(object);
       });
 }
