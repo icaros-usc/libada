@@ -62,7 +62,7 @@ if __name__ == '__main__':
   sodaPose[0,3] = 0.25
   sodaPose[1,3] = -0.35
   sodaURDFUri = "package://pr_assets/data/objects/can.urdf"
-  world.add_body_from_urdf_matrix(sodaURDFUri, sodaPose)
+  soda = world.add_body_from_urdf_matrix(sodaURDFUri, sodaPose)
 
   tableURDFUri = "package://pr_assets/data/furniture/uw_demo_table.urdf"
   tablePose = [0.3, 0.0, -0.7, 0.707107, 0, 0, 0.707107]
@@ -121,6 +121,8 @@ if __name__ == '__main__':
 
   print("Closing hand")
   closeHand(hand, [0.75,0.75])
+
+  hand.grab(soda)
 
   #next step transfer Jacobian pseudo-inverse for upward motion
 

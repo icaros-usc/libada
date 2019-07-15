@@ -156,6 +156,10 @@ void Ada(pybind11::module& m) {
       .def("get_endeffector_body_node",
           [](ada::AdaHand *self) -> dart::dynamics::BodyNode* {
         return self->getEndEffectorBodyNode();
+      })
+      .def("grab",
+          [](ada::AdaHand *self,const dart::dynamics::SkeletonPtr& object) -> void {
+           self->grab(object);
       });
 }
 
