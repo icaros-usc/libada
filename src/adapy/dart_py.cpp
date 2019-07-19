@@ -32,6 +32,9 @@ void Dart(pybind11::module& m) {
            })
       .def("get_linear_jacobian",
            [](dart::dynamics::MetaSkeleton *self, const dart::dynamics::BodyNode* _node) ->dart::math::LinearJacobian{
-      return self->getLinearJacobian(_node);});
+      return self->getLinearJacobian(_node);})
+      .def("get_jacobian",
+           [](dart::dynamics::MetaSkeleton *self, const dart::dynamics::BodyNode* _node) ->dart::math::Jacobian{
+      return self->getJacobian(_node);});
 }
 
