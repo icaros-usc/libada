@@ -87,6 +87,29 @@ class Ada final : public aikido::robot::Robot {
       const dart::common::ResourceRetrieverPtr &retriever
       = std::make_shared<aikido::io::CatkinResourceRetriever>());
 
+  /// Construct Ada metaskeleton using a URI.
+  /// \param[in] env World (either for planning, post-processing, or executing).
+  /// \param[in] simulation True if running in simulation mode.
+  /// \param[in] node ROS node. Required for running in real.
+  /// \param[in] rngSeed seed for initializing random generator.
+  ///            May be nullptr if simulation is true.
+  /// \param[in] adaUrdfUri Path to Ada urdf model.
+  /// \param[in] adaSrdfUri Path to Ada srdf file.
+  /// \param[in] endEffectorName Name of end effector as in the urdf file.
+  /// \param[in] retriever Resource retriever for retrieving Ada
+  Ada(aikido::planner::WorldPtr env,
+      bool simulation,
+      std::string name,
+      const Eigen::Isometry3d &transform,
+      const dart::common::Uri &adaUrdfUri = defaultAdaUrdfUri,
+      const dart::common::Uri &adaSrdfUri = defaultAdaSrdfUri,
+      const std::string &endEffectorName = "j2n6s200_end_effector",
+      const std::string &armTrajectoryExecutorName = "trajectory_controller",
+      const ::ros::NodeHandle *node = nullptr,
+      aikido::common::RNG::result_type rngSeed = std::random_device{}(),
+      const dart::common::ResourceRetrieverPtr &retriever
+      = std::make_shared<aikido::io::CatkinResourceRetriever>());
+
   virtual ~Ada() = default;
 
   /// \copydoc Robot::smoothPath
