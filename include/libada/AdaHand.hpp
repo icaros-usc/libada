@@ -74,6 +74,8 @@ public:
 
   virtual ~AdaHand() = default;
 
+  bool isGrabbing(const std::string &objectName);
+
   // Documentation inherited.
   void grab(const dart::dynamics::SkeletonPtr& bodyToGrab) override;
 
@@ -101,6 +103,8 @@ public:
 
   // Documentation inherited.
   dart::dynamics::BodyNode* getHandBaseBodyNode() const override;
+
+  dart::dynamics::BodyNode* getGrabbedBodyNode() const;
 
   /// Load preshapes from a YAML file.
   ///

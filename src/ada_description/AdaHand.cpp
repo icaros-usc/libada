@@ -132,6 +132,21 @@ dart::dynamics::MetaSkeletonPtr AdaHand::getMetaSkeleton()
 }
 
 //==============================================================================
+bool AdaHand::isGrabbing(const std::string &objectName) {
+  bool isGrabbing = false;
+  if (mGrabMetadata) {
+    if (mGrabMetadata->mParentSkeleton->getName() == objectName) {
+      ROS_INFO_STREAM("Ada is grabbing " << objectName);
+      isGrabbing = true;
+    } else {
+      ROS_INFO_STREAM("Ada is grabbing " << mGrabMetadata->mParentSkeleton->getName() << ", but not " << objectName);
+    }
+  } else {
+    ROS_INFO_STREAM("Ada is not grabbing anything!");
+  }
+  return isGrabbing;
+}
+
 void AdaHand::grab(const dart::dynamics::SkeletonPtr& bodyToGrab)
 {
   using dart::dynamics::Joint;
@@ -326,6 +341,16 @@ dart::dynamics::BodyNode* AdaHand::getEndEffectorBodyNode() const
 dart::dynamics::BodyNode* AdaHand::getHandBaseBodyNode() const
 {
   return mHandBaseBodyNode.get();
+}
+
+dart::dynamics::BodyNode* AdaHand::getGrabbedBodyNode() const
+{
+  if (mGrabMetadata) {
+    return mGrabMetadata->mBodyNode;
+  } else {
+    ROS_INFO("Ada is not grabbing anything!");
+    return nullptr;
+  }
 }
 
 //==============================================================================
