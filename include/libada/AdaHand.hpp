@@ -74,7 +74,7 @@ public:
 
   virtual ~AdaHand() = default;
 
-  bool isGrabbing(const std::string &objectName);
+  int isGrabbing(const std::string &objectName);
 
   // Documentation inherited.
   void grab(const dart::dynamics::SkeletonPtr& bodyToGrab) override;

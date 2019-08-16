@@ -132,14 +132,15 @@ dart::dynamics::MetaSkeletonPtr AdaHand::getMetaSkeleton()
 }
 
 //==============================================================================
-bool AdaHand::isGrabbing(const std::string &objectName) {
-  bool isGrabbing = false;
+int AdaHand::isGrabbing(const std::string &objectName) {
+  int isGrabbing = 2;
   if (mGrabMetadata) {
     if (mGrabMetadata->mParentSkeleton->getName() == objectName) {
       ROS_INFO_STREAM("Ada is grabbing " << objectName);
-      isGrabbing = true;
+      isGrabbing = 0;
     } else {
       ROS_INFO_STREAM("Ada is grabbing " << mGrabMetadata->mParentSkeleton->getName() << ", but not " << objectName);
+      isGrabbing = 1;
     }
   } else {
     ROS_INFO_STREAM("Ada is not grabbing anything!");
