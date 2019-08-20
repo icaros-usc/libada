@@ -291,8 +291,6 @@ Ada::Ada(
   using aikido::common::ExecutorThread;
   using aikido::control::ros::RosJointStateClient;
 
-//  std::string name = "j2n6s200";
-
   // Load Ada
   mRobotSkeleton = mWorld->getSkeleton(name);
   if (!mRobotSkeleton) {
