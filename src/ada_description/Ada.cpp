@@ -585,7 +585,7 @@ TrajectoryPtr Ada::computeJointSpacePath(
   }
 
   auto timedTrajectory
-     = this->retimePath(this->getArm()->getMetaSkeleton(),traj.get());
+      = this->retimePath(this->getArm()->getMetaSkeleton(), traj.get());
 
   return std::move(timedTrajectory);
 }
@@ -770,6 +770,14 @@ Eigen::VectorXd Ada::getVelocityLimits() const {
 //==============================================================================
 Eigen::VectorXd Ada::getAccelerationLimits() const {
   return mRobot->getMetaSkeleton()->getAccelerationUpperLimits();
+}
+
+Eigen::VectorXd Ada::getVelocityLimits(const dart::dynamics::MetaSkeletonPtr &skeleton) const {
+  return mRobot->getVelocityLimits(*skeleton);
+}
+
+Eigen::VectorXd Ada::getAccelerationLimits(const dart::dynamics::MetaSkeletonPtr &skeleton) const {
+  return mRobot->getAccelerationLimits(*skeleton);
 }
 
 //==============================================================================
