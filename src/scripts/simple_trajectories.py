@@ -3,9 +3,6 @@
 import adapy
 import rospy
 
-import pdb
-pdb.set_trace()
-
 rospy.init_node("adapy_simple_traj")
 rate = rospy.Rate(10)
 
@@ -19,6 +16,8 @@ if not rospy.is_shutdown():
     world = ada.get_world()
     can = world.add_body_from_urdf(canURDFUri, sodaCanPose)
     table = world.add_body_from_urdf(tableURDFUri, tablePose)
+
+    rospy.sleep(5.0)
 
     collision = ada.get_self_collision_constraint()
 
