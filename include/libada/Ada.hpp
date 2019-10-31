@@ -112,6 +112,10 @@ class Ada final : public aikido::robot::Robot {
 
   virtual ~Ada() = default;
 
+  bool ifSim() const {
+    return mSimulation;
+  }
+
   /// \copydoc Robot::smoothPath
   std::unique_ptr<aikido::trajectory::Spline> smoothPath(
       const dart::dynamics::MetaSkeletonPtr &metaSkeleton,
