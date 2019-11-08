@@ -74,6 +74,8 @@ dart::common::Uri defaultAdaUrdfUri{
     "package://ada_description/robots_urdf/ada_with_camera.urdf"};
 dart::common::Uri defaultAdaSrdfUri{
     "package://ada_description/robots_urdf/ada_with_camera.srdf"};
+dart::common::Uri visAdaUrdfUri{"package://ada_description/robots_urdf/vis_ada_with_camera.urdf"};
+dart::common::Uri visAdaSrdfUri{"package://ada_description/robots_urdf/vis_ada_with_camera.srdf"};
 
 const dart::common::Uri namedConfigurationsUri{
     "package://libada/resources/configurations.yaml"};
@@ -262,8 +264,9 @@ Ada::Ada(
     bool simulation,
     std::string name,
     const Eigen::Isometry3d &transform,
-    const dart::common::Uri &adaUrdfUri,
-    const dart::common::Uri &adaSrdfUri,
+    bool vis,
+    dart::common::Uri adaUrdfUri,
+    dart::common::Uri adaSrdfUri,
     const std::string &endEffectorName,
     const std::string &armTrajectoryExecutorName,
     const ::ros::NodeHandle *node,
@@ -290,6 +293,12 @@ Ada::Ada(
   dtinfo << "Arm Executor " << armTrajectoryExecutorName << std::endl;
   using aikido::common::ExecutorThread;
   using aikido::control::ros::RosJointStateClient;
+
+  if (vis) {
+    std::cout << "vis is true" << std::endl;
+    adaUrdfUri = visAdaUrdfUri;
+    adaSrdfUri = visAdaSrdfUri;
+  }
 
   // Load Ada
   mRobotSkeleton = mWorld->getSkeleton(name);

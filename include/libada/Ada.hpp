@@ -90,6 +90,9 @@ class Ada final : public aikido::robot::Robot {
   /// Construct Ada metaskeleton using a URI.
   /// \param[in] env World (either for planning, post-processing, or executing).
   /// \param[in] simulation True if running in simulation mode.
+  /// \param[in] name
+  /// \param[in] transform
+  /// \param[in] vis
   /// \param[in] node ROS node. Required for running in real.
   /// \param[in] rngSeed seed for initializing random generator.
   ///            May be nullptr if simulation is true.
@@ -101,8 +104,9 @@ class Ada final : public aikido::robot::Robot {
       bool simulation,
       std::string name,
       const Eigen::Isometry3d &transform,
-      const dart::common::Uri &adaUrdfUri = defaultAdaUrdfUri,
-      const dart::common::Uri &adaSrdfUri = defaultAdaSrdfUri,
+      bool vis,
+      dart::common::Uri adaUrdfUri = defaultAdaUrdfUri,
+      dart::common::Uri adaSrdfUri = defaultAdaSrdfUri,
       const std::string &endEffectorName = "j2n6s200_end_effector",
       const std::string &armTrajectoryExecutorName = "trajectory_controller",
       const ::ros::NodeHandle *node = nullptr,
