@@ -88,9 +88,10 @@ void Ada(pybind11::module& m) {
       .def("compute_smooth_joint_space_path",
            [](ada::Ada *self,
               const aikido::statespace::dart::MetaSkeletonStateSpacePtr &stateSpace,
-              const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints)
+              const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints,
+              const aikido::constraint::dart::CollisionFreePtr &collisionFreeConstraint=nullptr)
                -> aikido::trajectory::TrajectoryPtr {
-             return self->computeSmoothJointSpacePath(stateSpace, waypoints);
+             return self->computeSmoothJointSpacePath(stateSpace, waypoints, collisionFreeConstraint);
            })
       .def("compute_retime_path",
            [](ada::Ada *self,

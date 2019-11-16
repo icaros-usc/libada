@@ -184,7 +184,8 @@ class Ada final : public aikido::robot::Robot {
 
   aikido::trajectory::TrajectoryPtr computeSmoothJointSpacePath(
       const aikido::statespace::dart::MetaSkeletonStateSpacePtr &stateSpace,
-      const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints);
+      const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints,
+      const aikido::constraint::dart::CollisionFreePtr &collisionFreeConstraint);
 
   /// \copydoc Robot::planToConfiguration.
   aikido::trajectory::TrajectoryPtr planToConfiguration(
