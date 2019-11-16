@@ -77,6 +77,9 @@ void Aikido(pybind11::module& m) {
         self->addSkeleton(skeleton);
         return skeleton;
       })
+      .def("remove_skeleton", [](aikido::planner::World *self, std::shared_ptr<::dart::dynamics::Skeleton> skeleton) -> void {
+        self->removeSkeleton(skeleton);
+      })
       .def("get_skeleton", [](aikido::planner::World *self, int i) -> dart::dynamics::SkeletonPtr {
         if (i + 1 <= int(self->getNumSkeletons())) {
           return self->getSkeleton(i);
