@@ -384,7 +384,7 @@ TrajectoryPtr Ada::computeSmoothJointSpacePath(
     const aikido::statespace::dart::MetaSkeletonStateSpacePtr &stateSpace,
     const std::vector<std::pair<double, Eigen::VectorXd>> &waypoints,
     const aikido::constraint::dart::CollisionFreePtr &collisionFreeConstraint=nullptr) {
-//  auto satisfied = std::make_shared<aikido::constraint::Satisfied>(stateSpace);
+  auto satisfied = std::make_shared<aikido::constraint::Satisfied>(stateSpace);
 
   std::shared_ptr<aikido::statespace::GeodesicInterpolator>
       interpolator = std::make_shared<aikido::statespace::GeodesicInterpolator>(stateSpace);
@@ -397,14 +397,14 @@ TrajectoryPtr Ada::computeSmoothJointSpacePath(
     traj->addWaypoint(waypoint.first, state);
   }
 
-  std::vector<aikido::constraint::ConstTestablePtr> constraints;
-  if (collisionFreeConstraint) {
-    constraints.push_back(collisionFreeConstraint);
-  }
-  auto testable = std::make_shared<aikido::constraint::TestableIntersection>(stateSpace, constraints);
+//  std::vector<aikido::constraint::ConstTestablePtr> constraints;
+//  if (collisionFreeConstraint) {
+//    constraints.push_back(collisionFreeConstraint);
+//  }
+//  auto testable = std::make_shared<aikido::constraint::TestableIntersection>(stateSpace, constraints);
 
   auto smoothTrajectory
-      = this->smoothPath(this->getArm()->getMetaSkeleton(), traj.get(), testable);
+      = this->smoothPath(this->getArm()->getMetaSkeleton(), traj.get(), satisfied);
 
   return std::move(smoothTrajectory);
 }
