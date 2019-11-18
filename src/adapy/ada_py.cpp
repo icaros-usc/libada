@@ -118,7 +118,13 @@ void Ada(pybind11::module& m) {
               const aikido::trajectory::TrajectoryPtr &trajectory)
                -> void {
              auto future = self->executeTrajectory(trajectory);
-             future.wait();
+
+//             if (!future.valid()) {
+//               std::__throw_future_error(0);
+//             }
+//
+//             future.wait();
+              ros::Duration(15).sleep();
            })
       .def("start_viewer",
            [](ada::Ada *self, const std::string &topicName, const std::string &baseFrameName)
@@ -147,7 +153,8 @@ void Ada(pybind11::module& m) {
     .def("execute_preshape",
            [](ada::AdaHand *self, const Eigen::Vector2d &d)-> void {
 		auto future = self->executePreshape(d);
-                future.wait();
+//                future.wait();
+        ros::Duration(5).sleep();
            })
       .def("get_endeffector_transform",
            [](ada::AdaHand *self,
