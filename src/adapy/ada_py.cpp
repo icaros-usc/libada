@@ -124,7 +124,7 @@ void Ada(pybind11::module& m) {
 //             }
 //
 //             future.wait();
-              ros::Duration(15).sleep();
+//              ros::Duration(15).sleep();
            })
       .def("start_viewer",
            [](ada::Ada *self, const std::string &topicName, const std::string &baseFrameName)
@@ -154,7 +154,7 @@ void Ada(pybind11::module& m) {
            [](ada::AdaHand *self, const Eigen::Vector2d &d)-> void {
 		auto future = self->executePreshape(d);
 //                future.wait();
-        ros::Duration(5).sleep();
+//        ros::Duration(5).sleep();
            })
       .def("get_endeffector_transform",
            [](ada::AdaHand *self,
