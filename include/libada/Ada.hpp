@@ -33,6 +33,8 @@ namespace ada {
 
 extern dart::common::Uri defaultAdaUrdfUri;
 extern dart::common::Uri defaultAdaSrdfUri;
+extern dart::common::Uri fixedAdaUrdfUri;
+extern dart::common::Uri fixedAdaSrdfUri;
 extern std::vector<std::string> possibleTrajectoryExecutors;
 
 /// Enum for postprocessors.
@@ -80,6 +82,19 @@ class Ada final : public aikido::robot::Robot {
       bool simulation,
       const dart::common::Uri &adaUrdfUri = defaultAdaUrdfUri,
       const dart::common::Uri &adaSrdfUri = defaultAdaSrdfUri,
+      const std::string &endEffectorName = "j2n6s200_end_effector",
+      const std::string &armTrajectoryExecutorName = "trajectory_controller",
+      const ::ros::NodeHandle *node = nullptr,
+      aikido::common::RNG::result_type rngSeed = std::random_device{}(),
+      const dart::common::ResourceRetrieverPtr &retriever
+      = std::make_shared<aikido::io::CatkinResourceRetriever>());
+
+  Ada(aikido::planner::WorldPtr env,
+      bool simulation,
+      std::string name,
+      bool vis,
+      const dart::common::Uri adaUrdfUri = fixedAdaUrdfUri,
+      const dart::common::Uri adaSrdfUri = fixedAdaSrdfUri,
       const std::string &endEffectorName = "j2n6s200_end_effector",
       const std::string &armTrajectoryExecutorName = "trajectory_controller",
       const ::ros::NodeHandle *node = nullptr,
