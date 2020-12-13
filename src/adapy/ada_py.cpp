@@ -7,6 +7,7 @@
 
 #include "libada/Ada.hpp"
 #include "aikido/statespace/ScopedState.hpp"
+#include "aikido/planner/vectorfield/VectorFieldUtil.hpp"
 #include <aikido/planner/World.hpp>
 namespace py = pybind11;
 
@@ -17,6 +18,10 @@ void Ada(pybind11::module& m) {
         return std::make_shared<ada::Ada>(
             aikido::planner::World::create(), simulation);
       }))
+      .def("if_sim",
+           [](ada::Ada *self) -> bool {
+        return self->ifSim();
+      })
       .def("get_self_collision_constraint",
            [](ada::Ada *self) -> std::shared_ptr<aikido::constraint::dart::CollisionFree> {
              return self->getSelfCollisionConstraint(
@@ -43,13 +48,40 @@ void Ada(pybind11::module& m) {
       .def("get_arm_skeleton", [](ada::Ada *self) -> dart::dynamics::MetaSkeletonPtr {
         return self->getArm()->getMetaSkeleton();
       })
+      .def("get_num_arm_dofs", [](ada::Ada *self) -> int {
+        return self->getArm()->getMetaSkeleton()->getNumDofs();
+      })
+      .def("compute_joint_velocity_from_twist", [](ada::Ada *self, const Eigen::Vector6d& desiredTwist, double step_size) -> Eigen::VectorXd {
+        Eigen::VectorXd jointVelocity;
+        aikido::planner::vectorfield::computeJointVelocityFromTwist(jointVelocity, desiredTwist,
+                                                                           self->getArm()->getMetaSkeleton(),
+                                                                           self->getHand()->getEndEffectorBodyNode(),
+                                                                           3e-2,
+                                                                           self->getArm()->getMetaSkeleton()->getVelocityLowerLimits(),
+                                                                           self->getArm()->getMetaSkeleton()->getVelocityUpperLimits(),
+                                                                           false,
+                                                                           step_size);
+        return jointVelocity;
+      })
+      .def("get_arm_velocity_limits", [](ada::Ada *self) -> Eigen::VectorXd {
+        return self->getArm()->getMetaSkeleton()->getVelocityUpperLimits();
+      })
       .def("get_arm_state_space", [](ada::Ada *self) -> aikido::statespace::dart::MetaSkeletonStateSpacePtr {
         return self->getArm()->getStateSpace();
       })
-      .def("set_positions",[](ada::Ada *self,const Eigen::VectorXd& configuration) -> void {
+      .def("set_arm_positions",[](ada::Ada *self, const Eigen::VectorXd& configuration) -> void {
            auto arm = self->getArm();
            auto armSkeleton = arm->getMetaSkeleton();
            armSkeleton->setPositions(configuration);
+      })
+      .def("get_arm_positions", [](ada::Ada *self) -> Eigen::VectorXd {
+        return self->getArm()->getMetaSkeleton()->getPositions();
+      })
+      .def("get_arm_lower_limits", [](ada::Ada *self) -> Eigen::VectorXd {
+        return self->getArm()->getMetaSkeleton()->getPositionLowerLimits();
+      })
+      .def("get_arm_upper_limits", [](ada::Ada *self) -> Eigen::VectorXd {
+        return self->getArm()->getMetaSkeleton()->getPositionUpperLimits();
       })
       .def("set_up_collision_detection",
            [](ada::Ada *self,
@@ -144,6 +176,14 @@ void Ada(pybind11::module& m) {
            [](ada::AdaHand *self) -> dart::dynamics::MetaSkeletonPtr {
         return self->getMetaSkeleton();
       })
+      .def("get_num_finger_dofs",
+           [](ada::AdaHand *self) -> int {
+        return self->getMetaSkeleton()->getNumDofs();
+      })
+      .def("get_positions",
+           [](ada::AdaHand *self) -> Eigen::VectorXd {
+             return self->getMetaSkeleton()->getPositions();
+           })
     .def("get_state_space",
            [](ada::AdaHand *self) -> aikido::statespace::dart::MetaSkeletonStateSpacePtr {
         auto handSkeleton = self->getMetaSkeleton();
@@ -168,6 +208,11 @@ void Ada(pybind11::module& m) {
       .def("grab",
           [](ada::AdaHand *self, dart::dynamics::SkeletonPtr object) -> void {
            self->grab(object);
+      })
+      .def("get_end_effector_transform",
+      [](ada::AdaHand *self) -> Eigen::Matrix4d {
+        // get transform wrt world frame
+        return self->getEndEffectorBodyNode()->getTransform().matrix();
       });
 }
 
