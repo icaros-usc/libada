@@ -24,6 +24,10 @@ void Dart(pybind11::module& m) {
            [](dart::dynamics::Skeleton *self) -> Eigen::Vector3d {
              return self->getBodyNode(0)->getLocalCOM();
            })
+      .def("get_full_extents",
+           [](dart::dynamics::Skeleton *self) -> Eigen::Vector3d {
+             return self->getShapeNode(0)->getShape()->getBoundingBox().computeFullExtents();
+           })
       .def("get_num_joints",
            [](dart::dynamics::Skeleton *self) -> int {
              return self->getNumJoints();

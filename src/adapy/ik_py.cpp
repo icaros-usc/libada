@@ -8,6 +8,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/cast.h>
 #include <pybind11/stl.h>
+#include "libada/Ada.hpp"
 
 namespace py = pybind11;
 
@@ -16,10 +17,10 @@ void IK(pybind11::module& m) {
       dart::dynamics::MetaSkeletonPtr armSkeleton,
       aikido::statespace::dart::MetaSkeletonStateSpacePtr armSpace,
       aikido::constraint::dart::TSR objectTSR,
-                        dart::dynamics::BodyNode* body_node) ->
+      ada::AdaHandPtr handPtr) ->
   aikido::constraint::dart::InverseKinematicsSampleable {
     auto goalTSR = std::make_shared<aikido::constraint::dart::TSR>(objectTSR);
-    auto ik = dart::dynamics::InverseKinematics::create(body_node);
+    auto ik = dart::dynamics::InverseKinematics::create(handPtr->getEndEffectorBodyNode());
     ik->setDofs(armSkeleton->getDofs());
     auto rng = std::unique_ptr<aikido::common::RNG>(new aikido::common::RNGWrapper<std::default_random_engine>(0));
     aikido::constraint::dart::InverseKinematicsSampleable ikSampleable(armSpace,
@@ -41,8 +42,10 @@ void IK(pybind11::module& m) {
       return self->canSample();
     })
     .def("sample", [](aikido::constraint::SampleGenerator *self,
-                      aikido::statespace::dart::MetaSkeletonStateSpacePtr armSpace) -> Eigen::VectorXd {
+                      const aikido::statespace::dart::MetaSkeletonStateSpacePtr& armSpace,
+                      const dart::dynamics::MetaSkeletonPtr& armSkeleton) -> Eigen::VectorXd {
       auto goalState = armSpace->createState();
+      std::lock_guard<std::mutex> lock(armSkeleton->getBodyNode(0)->getSkeleton()->getMutex());
       bool sampled = self->sample(goalState);
       Eigen::VectorXd positions;
       if (!sampled) return positions;

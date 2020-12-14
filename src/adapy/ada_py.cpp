@@ -149,6 +149,12 @@ void Ada(pybind11::module& m) {
                                                           10);
               return trajectory;
           })
+      .def("sample_tsr",
+           [](ada::Ada *self,
+              aikido::constraint::dart::TSR objectTSR) -> void {
+            auto bn = self->getHand()->getEndEffectorBodyNode();
+
+           })
       .def("execute_trajectory",
            [](ada::Ada *self,
               const aikido::trajectory::TrajectoryPtr &trajectory)
