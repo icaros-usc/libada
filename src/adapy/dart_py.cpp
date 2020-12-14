@@ -16,6 +16,14 @@ void Dart(pybind11::module& m) {
            [](dart::dynamics::Skeleton *self) -> std::string { return self->getName(); })
       .def("get_positions",
            [](dart::dynamics::Skeleton *self) -> Eigen::VectorXd { return self->getPositions(); })
+      .def("get_pose",
+           [](dart::dynamics::Skeleton *self) -> Eigen::Matrix4d {
+             return self->getBodyNode(0)->getTransform().matrix();
+           })
+      .def("get_local_com",
+           [](dart::dynamics::Skeleton *self) -> Eigen::Vector3d {
+             return self->getBodyNode(0)->getLocalCOM();
+           })
       .def("get_num_joints",
            [](dart::dynamics::Skeleton *self) -> int {
              return self->getNumJoints();

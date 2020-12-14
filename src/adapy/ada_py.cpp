@@ -45,6 +45,10 @@ void Ada(pybind11::module& m) {
       .def("get_skeleton", [](ada::Ada *self) -> dart::dynamics::MetaSkeletonPtr {
         return self->getMetaSkeleton();
       })
+      .def("get_arm_fk_pose", [](ada::Ada *self, const Eigen::Vector6d& ik) -> Eigen::Matrix4d {
+        self->getArm()->getMetaSkeleton()->setPositions(ik);
+        return self->getHand()->getEndEffectorBodyNode()->getTransform().matrix();
+      })
       .def("get_arm_skeleton", [](ada::Ada *self) -> dart::dynamics::MetaSkeletonPtr {
         return self->getArm()->getMetaSkeleton();
       })
